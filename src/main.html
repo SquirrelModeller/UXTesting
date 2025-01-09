@@ -5,15 +5,14 @@
     <style>
         .container {
             position: relative;
-            width: 800px;
-            height: 600px;
+            width: 884px;
+            height: 1180px;
         }
 
         #backgroundImage {
             position: absolute;
             width: 100%;
             height: 100%;
-            object-fit: cover;
         }
 
         .overlay-image {
@@ -52,40 +51,76 @@
     </div>
 
     <script>
-        const imageGroups = [
+        const assets = [
             {
-                hoverImage: {
-                    src: '../assets/pictures/grocerysmart/hover.png',
-                    id: 'hover1',
-                    style: {
-                        left: '100px',
-                        top: '100px',
-                        width: '200px',
-                        height: '150px'
-                    }
+                id: 'redWine',
+                images: {
+                    default: '../assets/pictures/grocerysmart/Highlight Red.png',
+                    hover: '../assets/pictures/grocerysmart/hover.png',
+                    click: '../assets/pictures/grocerysmart/Highlight Red Highlighted.png',
+                    info: '../assets/pictures/grocerysmart/Vinchio info pop-up.png'
                 },
-                defaultImage: {
-                    src: '../assets/pictures/grocerysmart/Highlight Red.png',
-                    id: 'default1',
-                    style: {
-                        left: '100px',
-                        top: '100px',
-                        width: '200px',
-                        height: '150px'
-                    }
+                position: {
+                    width: 120,
+                    height: 185,
+                    left: 468,
+                    top: 455
                 },
-                clickImage: {
-                    src: '../assets/pictures/grocerysmart/Highlight Red Highlighted.png',
-                    id: 'click1',
-                    style: {
-                        left: '100px',
-                        top: '100px',
-                        width: '200px',
-                        height: '150px'
-                    }
+                infoCard: {
+                    width: 797/2.2,
+                    height: 367/2.2,
+                    left: 500,
+                    top: 410
                 }
             }
         ];
+
+        function createImageGroup(asset) {
+            const { id, images, position, infoCard } = asset;
+
+            const style = {
+                left: `${position.left}px`,
+                top: `${position.top}px`,
+                width: `${position.width}px`,
+                height: `${position.height}px`
+            };
+            const infoStyle = {
+                left: `${infoCard.left}px`,
+                top: `${infoCard.top}px`,
+                width: `${infoCard.width}px`,
+                height: `${infoCard.height}px`
+            };
+
+            return {
+                hoverImage: {
+                    src: images.hover,
+                    id: `hover-${id}`,
+                    style: { ...style }
+                },
+                defaultImage: {
+                    src: images.default,
+                    id: `default-${id}`,
+                    style: { ...style }
+                },
+                clickImage: {
+                    src: images.click,
+                    id: `click-${id}`,
+                    style: { ...style }
+                },
+                infoImage: {
+                    src: images.info,
+                    id: `info-${id}`,
+                    style: { ...infoStyle }
+                }
+            };
+        }
+
+        function imgFactory() {
+            return assets.map(asset => createImageGroup(asset));
+        }
+
+        const imageGroups = imgFactory();
+
 
         const container = document.querySelector('.container');
         const canvas = document.querySelector('.hit-canvas');
@@ -95,13 +130,15 @@
         canvas.height = container.offsetHeight;
 
         function initializeImages() {
-            imageGroups.forEach((group, index) => {
+            imageGroups.forEach((group) => {
+                const position = assets.find(asset =>
+                    `hover-${asset.id}` === group.hoverImage.id
+                ).position;
 
                 const hoverImg = new Image();
                 hoverImg.src = group.hoverImage.src;
                 hoverImg.id = group.hoverImage.id;
                 hoverImg.className = 'overlay-image hover-image';
-
                 Object.assign(hoverImg.style, group.hoverImage.style);
                 container.appendChild(hoverImg);
 
@@ -109,28 +146,32 @@
                 defaultImg.src = group.defaultImage.src;
                 defaultImg.id = group.defaultImage.id;
                 defaultImg.className = 'click-image default-image';
-
-                Object.assign(defaultImg.style, group.clickImage.style);
+                Object.assign(defaultImg.style, group.defaultImage.style);
                 container.appendChild(defaultImg);
 
                 const clickImg = new Image();
                 clickImg.src = group.clickImage.src;
                 clickImg.id = group.clickImage.id;
                 clickImg.className = 'overlay-image click-image';
-
                 Object.assign(clickImg.style, group.clickImage.style);
                 container.appendChild(clickImg);
 
+                const infoImg = new Image();
+                infoImg.src = group.infoImage.src;
+                infoImg.id = group.infoImage.id;
+                infoImg.className = 'overlay-image click-image';
+                Object.assign(infoImg.style, group.infoImage.style);
+                container.appendChild(infoImg);
+
                 const hoverCanvas = document.createElement('canvas');
-                hoverCanvas.width = parseInt(group.hoverImage.style.width);
-                hoverCanvas.height = parseInt(group.hoverImage.style.height);
+                hoverCanvas.width = position.width;
+                hoverCanvas.height = position.height;
                 const hoverCtx = hoverCanvas.getContext('2d');
 
                 hoverCtx.drawImage(defaultImg, 0, 0, hoverCanvas.width, hoverCanvas.height);
 
                 hoverImg.onload = () => {
                     hoverCtx.drawImage(hoverImg, 0, 0, hoverCanvas.width, hoverCanvas.height);
-
                 };
 
                 group.hoverCanvas = hoverCanvas;
@@ -147,6 +188,7 @@
                 const hoverImg = document.getElementById(group.hoverImage.id);
                 const clickImg = document.getElementById(group.clickImage.id);
                 const defaultImg = document.getElementById(group.defaultImage.id);
+                const infoImg = document.getElementById(group.infoImage.id);
 
                 if (clickImg.style.opacity !== '1') {
                     const imgLeft = parseInt(group.hoverImage.style.left);
@@ -195,6 +237,7 @@
             imageGroups.forEach(group => {
                 const hoverImg = document.getElementById(group.hoverImage.id);
                 const clickImg = document.getElementById(group.clickImage.id);
+                const infoImg = document.getElementById(group.infoImage.id);
 
                 const imgLeft = parseInt(group.hoverImage.style.left);
                 const imgTop = parseInt(group.hoverImage.style.top);
@@ -213,6 +256,7 @@
                         hoverImg.style.opacity = '0';
                         hoverImg.classList.remove('active');
                         clickImg.style.opacity = '1';
+                        infoImg.style.opacity = '1';
                     }
                 }
             });
@@ -247,7 +291,9 @@
             if (!clickedOverlay) {
                 imageGroups.forEach(group => {
                     const clickImg = document.getElementById(group.clickImage.id);
+                    const infoImg = document.getElementById(group.infoImage.id);
                     clickImg.style.opacity = '0';
+                    infoImg.style.opacity = '0';
                 });
             }
         }
