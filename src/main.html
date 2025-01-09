@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+        }
+
+        #backgroundImage {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .overlay-image {
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .default-image {
+            position: absolute;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .overlay-image.active {
+            pointer-events: auto;
+        }
+
+        .hit-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img id="backgroundImage" src="../assets/pictures/grocerysmart/pic2.webp" alt="Background">
+        <canvas class="hit-canvas"></canvas>
+    </div>
+
+    <script>
+        const imageGroups = [
+            {
+                hoverImage: {
+                    src: '../assets/pictures/grocerysmart/hover.png',
+                    id: 'hover1',
+                    style: {
+                        left: '100px',
+                        top: '100px',
+                        width: '200px',
+                        height: '150px'
+                    }
+                },
+                defaultImage: {
+                    src: '../assets/pictures/grocerysmart/Highlight Red.png',
+                    id: 'default1',
+                    style: {
+                        left: '100px',
+                        top: '100px',
+                        width: '200px',
+                        height: '150px'
+                    }
+                },
+                clickImage: {
+                    src: '../assets/pictures/grocerysmart/Highlight Red Highlighted.png',
+                    id: 'click1',
+                    style: {
+                        left: '100px',
+                        top: '100px',
+                        width: '200px',
+                        height: '150px'
+                    }
+                }
+            }
+        ];
+
+        const container = document.querySelector('.container');
+        const canvas = document.querySelector('.hit-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+
+        function initializeImages() {
+            imageGroups.forEach((group, index) => {
+
+                const hoverImg = new Image();
+                hoverImg.src = group.hoverImage.src;
+                hoverImg.id = group.hoverImage.id;
+                hoverImg.className = 'overlay-image hover-image';
+
+                Object.assign(hoverImg.style, group.hoverImage.style);
+                container.appendChild(hoverImg);
+
+                const defaultImg = new Image();
+                defaultImg.src = group.defaultImage.src;
+                defaultImg.id = group.defaultImage.id;
+                defaultImg.className = 'click-image default-image';
+
+                Object.assign(defaultImg.style, group.clickImage.style);
+                container.appendChild(defaultImg);
+
+                const clickImg = new Image();
+                clickImg.src = group.clickImage.src;
+                clickImg.id = group.clickImage.id;
+                clickImg.className = 'overlay-image click-image';
+
+                Object.assign(clickImg.style, group.clickImage.style);
+                container.appendChild(clickImg);
+
+                const hoverCanvas = document.createElement('canvas');
+                hoverCanvas.width = parseInt(group.hoverImage.style.width);
+                hoverCanvas.height = parseInt(group.hoverImage.style.height);
+                const hoverCtx = hoverCanvas.getContext('2d');
+
+                hoverCtx.drawImage(defaultImg, 0, 0, hoverCanvas.width, hoverCanvas.height);
+
+                hoverImg.onload = () => {
+                    hoverCtx.drawImage(hoverImg, 0, 0, hoverCanvas.width, hoverCanvas.height);
+
+                };
+
+                group.hoverCanvas = hoverCanvas;
+                group.hoverCtx = hoverCtx;
+            });
+        }
+
+        function handleMouseMove(e) {
+            const rect = container.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            imageGroups.forEach(group => {
+                const hoverImg = document.getElementById(group.hoverImage.id);
+                const clickImg = document.getElementById(group.clickImage.id);
+                const defaultImg = document.getElementById(group.defaultImage.id);
+
+                if (clickImg.style.opacity !== '1') {
+                    const imgLeft = parseInt(group.hoverImage.style.left);
+                    const imgTop = parseInt(group.hoverImage.style.top);
+                    const imgWidth = parseInt(group.hoverImage.style.width);
+                    const imgHeight = parseInt(group.hoverImage.style.height);
+
+                    if (mouseX >= imgLeft && mouseX < imgLeft + imgWidth &&
+                        mouseY >= imgTop && mouseY < imgTop + imgHeight) {
+
+                        // mouse to img coords
+                        const localX = mouseX - imgLeft;
+                        const localY = mouseY - imgTop;
+
+                        const pixel = group.hoverCtx.getImageData(localX, localY, 1, 1).data;
+
+                        if (pixel[3] > 0) {
+                            hoverImg.style.opacity = '1';
+                            hoverImg.classList.add('active');
+
+                            defaultImg.style.opacity = '0';
+                            defaultImg.classList.add('active');
+                        } else {
+                            hoverImg.style.opacity = '0';
+                            hoverImg.classList.remove('active');
+
+                            defaultImg.style.opacity = '1';
+                            defaultImg.classList.remove('active');
+                        }
+                    } else {
+                        hoverImg.style.opacity = '0';
+                        hoverImg.classList.remove('active');
+
+                        defaultImg.style.opacity = '1';
+                        defaultImg.classList.remove('active');
+                    }
+                }
+            });
+        }
+
+        function handleClick(e) {
+            const rect = container.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            imageGroups.forEach(group => {
+                const hoverImg = document.getElementById(group.hoverImage.id);
+                const clickImg = document.getElementById(group.clickImage.id);
+
+                const imgLeft = parseInt(group.hoverImage.style.left);
+                const imgTop = parseInt(group.hoverImage.style.top);
+                const imgWidth = parseInt(group.hoverImage.style.width);
+                const imgHeight = parseInt(group.hoverImage.style.height);
+
+                if (mouseX >= imgLeft && mouseX < imgLeft + imgWidth &&
+                    mouseY >= imgTop && mouseY < imgTop + imgHeight) {
+
+                    const localX = mouseX - imgLeft;
+                    const localY = mouseY - imgTop;
+
+                    const pixel = group.hoverCtx.getImageData(localX, localY, 1, 1).data;
+
+                    if (pixel[3] > 0 && hoverImg.style.opacity === '1') {
+                        hoverImg.style.opacity = '0';
+                        hoverImg.classList.remove('active');
+                        clickImg.style.opacity = '1';
+                    }
+                }
+            });
+        }
+
+        function handleBackgroundClick(e) {
+            const rect = container.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            let clickedOverlay = false;
+
+            imageGroups.forEach(group => {
+                const imgLeft = parseInt(group.hoverImage.style.left);
+                const imgTop = parseInt(group.hoverImage.style.top);
+                const imgWidth = parseInt(group.hoverImage.style.width);
+                const imgHeight = parseInt(group.hoverImage.style.height);
+
+                if (mouseX >= imgLeft && mouseX < imgLeft + imgWidth &&
+                    mouseY >= imgTop && mouseY < imgTop + imgHeight) {
+
+                    const localX = mouseX - imgLeft;
+                    const localY = mouseY - imgTop;
+
+                    const pixel = group.hoverCtx.getImageData(localX, localY, 1, 1).data;
+                    if (pixel[3] > 0) {
+                        clickedOverlay = true;
+                    }
+                }
+            });
+
+            if (!clickedOverlay) {
+                imageGroups.forEach(group => {
+                    const clickImg = document.getElementById(group.clickImage.id);
+                    clickImg.style.opacity = '0';
+                });
+            }
+        }
+
+        initializeImages();
+        container.addEventListener('mousemove', handleMouseMove);
+        container.addEventListener('click', handleClick);
+        container.addEventListener('click', handleBackgroundClick);
+    </script>
+</body>
+
+</html>
