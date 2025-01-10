@@ -74,7 +74,7 @@ class DragManager {
                 });
 
                 infoImg.style.clipPath = `inset(0px 0px 0px ${group.infoImage.clipArea}px)`
-                
+
                 event.preventDefault();
                 break;
             }
@@ -141,6 +141,7 @@ class DragManager {
                 if (element) {
                     element.style.left = `${dragData.originalPosition.left}px`;
                     element.style.top = `${dragData.originalPosition.top}px`;
+                    element.style.clipPath = ""
                 }
             });
             this.dragState.clear();
@@ -156,6 +157,7 @@ class DragManager {
             if (dragData) {
                 infoImg.style.left = `${dragData.originalPosition.left}px`;
                 infoImg.style.top = `${dragData.originalPosition.top}px`;
+                infoImg.style.clipPath = ""
             }
         }
     }
