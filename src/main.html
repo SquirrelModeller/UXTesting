@@ -70,7 +70,8 @@
                     width: 797 / 2.2,
                     height: 367 / 2.2,
                     left: 500,
-                    top: 410
+                    top: 410,
+                    clipArea: (0, 0, 0, 94)
                 }
             },
             {
@@ -85,13 +86,14 @@
                     width: 481 / 2.2,
                     height: 327 / 2.2,
                     left: 328,
-                    top: 890
+                    top: 890,
                 },
                 infoCard: {
                     width: 873 / 2.2,
                     height: 403 / 2.2,
                     left: 500,
-                    top: 850
+                    top: 850,
+                    clipArea: 97
                 }
             }
         ];
@@ -131,6 +133,7 @@
                 infoImage: {
                     src: images.info,
                     id: `info-${id}`,
+                    clipArea: infoCard.clipArea ,
                     style: { ...infoStyle }
                 }
             };

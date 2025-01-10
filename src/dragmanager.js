@@ -73,6 +73,8 @@ class DragManager {
                     }
                 });
 
+                infoImg.style.clipPath = `inset(0px 0px 0px ${group.infoImage.clipArea}px)`
+                
                 event.preventDefault();
                 break;
             }
